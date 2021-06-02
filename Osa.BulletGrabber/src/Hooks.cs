@@ -16,12 +16,14 @@ namespace Osa.BulletGrabber
     {
         private readonly int _delay;
         private readonly float _range;
+        private readonly string _hand;
         private readonly ManualLogSource _manualLogSource;
 
-        public Hooks(int delay, float range, ManualLogSource manualLogSource)
+        public Hooks(int delay, float range, string hand, ManualLogSource manualLogSource)
         {
             _delay = delay;
             _range = range;
+            _hand = hand;
             _manualLogSource = manualLogSource;
             Hook();
         }
@@ -50,14 +52,19 @@ namespace Osa.BulletGrabber
             FistVR.FVRFireArmRound self, FVRViveHand hand)
         {
             orig(self, hand);
+
             // Check if grabber is active
             if (_active)
             {
-                if (self.HoveredOverRound == null)
-                    return;
+                // Check for hand mode
+                if ((hand.IsThisTheRightHand && (_hand != "left")) || (!hand.IsThisTheRightHand && (_hand != "right")))
+                {
+                    if (self.HoveredOverRound == null)
+                        return;
 
-                _manualLogSource.LogInfo("Palming the round");
-                self.PalmRound(self.HoveredOverRound, false, true);
+                    _manualLogSource.LogInfo("Palming the round");
+                    self.PalmRound(self.HoveredOverRound, false, true);
+                }
             }
         }
 

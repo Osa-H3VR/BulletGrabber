@@ -53,7 +53,7 @@ namespace Osa.BulletGrabber
             Logger.LogInfo($"Loaded in: '{delay.Value}' ms of delay");
             Logger.LogInfo($"Loaded in: '{range.Value}' range");
             
-            _hooks = new Hooks(delay.Value,range.Value, Logger);
+            _hooks = new Hooks(delay.Value,range.Value,hand.Value.ToLowerInvariant(), Logger);
         }
         
         // And now you can access much more of Deli
