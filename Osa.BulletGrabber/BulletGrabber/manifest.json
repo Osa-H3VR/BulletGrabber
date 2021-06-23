@@ -4,7 +4,7 @@
     "Osa__PL"
   ],
   "guid": "osa.bulletgrabber",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "require": "0.3.0",
   "dependencies": {},
   "assets": {

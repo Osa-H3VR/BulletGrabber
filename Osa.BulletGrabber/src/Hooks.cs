@@ -77,16 +77,15 @@ namespace Osa.BulletGrabber
                 // Check for hand mode
                 if ((hand.IsThisTheRightHand && (_hand != "left")) || (!hand.IsThisTheRightHand && (_hand != "right")))
                 {
-                    if (bulet == null)
+                    if (bulet[currentHand] == null)
                         return;
 
                     _manualLogSource.LogInfo("Palming the round");
                     self.PalmRound(bulet[currentHand], false, true);
-                    bulet = null;
+                    bulet[currentHand] = null;
                 }
                 else
                 {
-
                     _manualLogSource.LogWarning(
                         $"Cant palm round, HandMode is: {_hand} and current hand is {currentHand}!");
                 }
@@ -97,24 +96,27 @@ namespace Osa.BulletGrabber
             FistVR.FVRViveHand self, FVRPhysicalObject obj)
         {
             orig(self, obj);
-            _manualLogSource.LogInfo($"Called");
+            
             if (obj is FistVR.FVRFireArmRound round)
             {
                 string currentHand = self.IsThisTheRightHand ? "right" : "left";
-                string otherHand = currentHand=="left" ? "right" : "left";
+                string otherHand = self.IsThisTheRightHand ? "left" : "right";
+                
+                _manualLogSource.LogDebug($"Called from {currentHand}, opposite hand is of course {otherHand}, duh.");
+                
                 string currentItemId = obj.ObjectWrapper.ItemID;
 
-                _manualLogSource.LogInfo($"Is round!");
+                _manualLogSource.LogDebug($"Is round!");
 
                 if (!round.isPalmable || round.MaxPalmedAmount <= 1)
                     return;
 
                 FistVR.FVRFireArmRound[] array = UnityEngine.Object.FindObjectsOfType<FistVR.FVRFireArmRound>();
 
-                _manualLogSource.LogInfo($"Found {array.Length} rounds");
+                _manualLogSource.LogDebug($"Found {array.Length} rounds");
                 if (array.Length >= round.MaxPalmedAmount - 1)
                 {
-                    _manualLogSource.LogWarning($"Reached palm limit of {round.MaxPalmedAmount}!");
+                    _manualLogSource.LogDebug($"Reached palm limit of {round.MaxPalmedAmount}!");
                 }
 
                 // Filter out bullets
@@ -122,39 +124,44 @@ namespace Osa.BulletGrabber
                     new SortedList<float, FistVR.FVRFireArmRound>();
                 SortedList<float, FistVR.FVRFireArmRound> pickupAbleArmRounds =
                     new SortedList<float, FistVR.FVRFireArmRound>();
-                foreach (FistVR.FVRFireArmRound bulet in array)
+                foreach (FistVR.FVRFireArmRound foundRound in array)
                 {
-                    _manualLogSource.LogInfo($"Round type {bulet.RoundType} vs {round.RoundType}");
+                    _manualLogSource.LogDebug($"===");
+                    _manualLogSource.LogDebug($"Round type {foundRound.RoundType} vs {round.RoundType}");
                     // Only find compatible and unspent ammo
-                    if (bulet.RoundType == round.RoundType && !bulet.IsSpent)
+                    if (foundRound.RoundType == round.RoundType && !foundRound.IsSpent)
                     {
-                        _manualLogSource.LogInfo($"Round type is compatible");
+                        _manualLogSource.LogDebug($"Round type is compatible");
                         // Check for rounds you dont want to select
-                        if (!bulet.IsHeld && bulet.QuickbeltSlot == null)
+                        if (!foundRound.IsHeld && foundRound.QuickbeltSlot == null)
                         {
+                            _manualLogSource.LogDebug($"Round is not already in use");
                             // Is it already being processed by the other hand?
-                            if (!_alreadyTaken[otherHand].Contains(bulet))
+                            if (!_alreadyTaken[otherHand].Contains(foundRound))
                             {
+                                _manualLogSource.LogDebug($"Round is not already loaded for the other hand");
                                 // Check the distance
-                                var distance = Vector3.Distance(round.Transform.position, bulet.Transform.position);
+                                var distance = Vector3.Distance(round.Transform.position, foundRound.Transform.position);
 
                                 if (distance < _range)
                                 {
-                                    _manualLogSource.LogInfo($"Adding to the list");
+                                    _manualLogSource.LogDebug($"Round is close enough");
 
                                     // Separated into the same bullets and the other types
-                                    if (bulet.ObjectWrapper.ItemID == currentItemId && _buletGrab != "closest")
+                                    if (foundRound.ObjectWrapper.ItemID == currentItemId && _buletGrab != "closest")
                                     {
-                                        pickupAbleSameType.Add(distance, bulet);
+                                        _manualLogSource.LogDebug($"Adding to list");
+                                        pickupAbleSameType.Add(distance, foundRound);
                                     }
                                     else
                                     {
-                                        pickupAbleArmRounds.Add(distance, bulet);
+                                        _manualLogSource.LogDebug($"Adding to other list");
+                                        pickupAbleArmRounds.Add(distance, foundRound);
                                     }
                                 }
                                 else
                                 {
-                                    _manualLogSource.LogInfo($"Too far! {distance}>{_range}");
+                                    _manualLogSource.LogDebug($"Too far! {distance}>{_range}");
                                 }
                             }
                         }
@@ -170,12 +177,12 @@ namespace Osa.BulletGrabber
                 switch (_buletGrab)
                 {
                     case "onlythesame":
-                        selected = pickupAbleSameType.Take(round.MaxPalmedAmount - 1).Select(x => x.Value).ToList();
+                        selected = pickupAbleSameType.Take(round.MaxPalmedAmount).Select(x => x.Value).ToList();
                         break;
                     case "firstthesame":
-                        selected = pickupAbleSameType.Take(round.MaxPalmedAmount - 1).Select(x => x.Value).ToList();
+                        selected = pickupAbleSameType.Take(round.MaxPalmedAmount).Select(x => x.Value).ToList();
                         //Not enough of the same type, add other, compatible bullets
-                        if (selected.Count < round.MaxPalmedAmount - 1)
+                        if (selected.Count < round.MaxPalmedAmount)
                         {
                             selected.AddRange(pickupAbleArmRounds.Take(round.MaxPalmedAmount - selected.Count)
                                 .Select(x => x.Value).ToList());
@@ -183,25 +190,30 @@ namespace Osa.BulletGrabber
 
                         break;
                     case "closest":
-                        selected = pickupAbleArmRounds.Take(round.MaxPalmedAmount - 1).Select(x => x.Value).ToList();
+                        selected = pickupAbleArmRounds.Take(round.MaxPalmedAmount).Select(x => x.Value).ToList();
                         break;
                     default:
                         throw new NotSupportedException($"BulletGrabMode of: {_buletGrab} is not supported!");
                 }
 
-                _manualLogSource.LogInfo($"Selected rounds: {selected.Count}");
+                _manualLogSource.LogDebug($"Selected rounds: {selected.Count}");
 
                 AnvilManager.Run(GetBullets(selected, currentHand));
             }
         }
 
-        private Stopwatch? _watch;
-
         // For "left" and "right" hand correlattion
+        // TODO! Jesus this should be atleast a class
         private Dictionary<string, bool> _active = new Dictionary<string, bool>()
         {
             {"left", false},
             {"right", false}
+        };
+        
+        private Dictionary<string, Stopwatch?> _watch = new Dictionary<string, Stopwatch? >()
+        {
+            {"left", new Stopwatch()},
+            {"right", new Stopwatch()}
         };
 
         private Dictionary<string,FistVR.FVRFireArmRound?> bulet =  new Dictionary<string, FistVR.FVRFireArmRound?>()
@@ -220,19 +232,19 @@ namespace Osa.BulletGrabber
         private IEnumerator GetBullets(List<FistVR.FVRFireArmRound> list, string hand)
         {
             _alreadyTaken[hand] = list;
-            _watch = new Stopwatch();
+            _watch[hand] = new Stopwatch();
             _active[hand] = true;
-            _watch.Start();
+            _watch[hand].Start();
 
             int i = 1;
 
-            _manualLogSource.LogInfo($"Delay is set to: {_delay}");
+            _manualLogSource.LogDebug($"Delay is set to: {_delay}");
 
             foreach (FistVR.FVRFireArmRound armRound in list)
             {
-                while ((_watch.ElapsedMilliseconds < _delay || bulet != null) && _active[hand])
+                while ((_watch[hand].ElapsedMilliseconds < _delay || bulet[hand] != null) && _active[hand])
                 {
-                    _manualLogSource.LogInfo($"Not yet, time is:{_delay} vs {_watch.ElapsedMilliseconds} ");
+                    _manualLogSource.LogDebug($"Not yet, time is:{_delay} vs {_watch[hand].ElapsedMilliseconds} ");
                     // Wait more
                     yield return null;
                 }
@@ -240,18 +252,18 @@ namespace Osa.BulletGrabber
                 // Secondary active check, just in case
                 if (_active[hand])
                 {
-                    _manualLogSource.LogInfo($"Palmed round: {i}");
+                    _manualLogSource.LogDebug($"Palmed round: {i}");
                     bulet[hand] = armRound;
                     i++;
-                    _watch.Reset();
-                    _watch.Start();
+                    _watch[hand].Reset();
+                    _watch[hand].Start();
                     yield return null;
                 }
             }
 
             _alreadyTaken[hand] = new List<FistVR.FVRFireArmRound>();
             _active[hand] = false;
-            _watch.Reset();
+            _watch[hand].Reset();
         }
     }
 }
