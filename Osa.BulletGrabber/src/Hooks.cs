@@ -101,6 +101,7 @@ namespace Osa.BulletGrabber
             {
                 string currentHand = self.IsThisTheRightHand ? "right" : "left";
                 string otherHand = self.IsThisTheRightHand ? "left" : "right";
+                _startLocation[currentHand] = round.Transform.position;
                 
                 _manualLogSource.LogDebug($"Called from {currentHand}, opposite hand is of course {otherHand}, duh.");
                 
@@ -141,7 +142,7 @@ namespace Osa.BulletGrabber
                             {
                                 _manualLogSource.LogDebug($"Round is not already loaded for the other hand");
                                 // Check the distance
-                                var distance = Vector3.Distance(round.Transform.position, foundRound.Transform.position);
+                                var distance = Vector3.Distance(_startLocation[currentHand], foundRound.Transform.position);
 
                                 if (distance < _range)
                                 {
@@ -204,6 +205,7 @@ namespace Osa.BulletGrabber
 
         // For "left" and "right" hand correlattion
         // TODO! Jesus this should be atleast a class
+        
         private Dictionary<string, bool> _active = new Dictionary<string, bool>()
         {
             {"left", false},
@@ -227,6 +229,13 @@ namespace Osa.BulletGrabber
         {
             {"left", new List<FistVR.FVRFireArmRound>(){}},
             {"right", new List<FistVR.FVRFireArmRound>(){}}
+        };
+        
+        // Location of the first bullet
+        private Dictionary<string, Vector3> _startLocation = new Dictionary<string, Vector3>()
+        {
+            {"left", new Vector3()},
+            {"right", new Vector3()}
         };
 
         private IEnumerator GetBullets(List<FistVR.FVRFireArmRound> list, string hand)
