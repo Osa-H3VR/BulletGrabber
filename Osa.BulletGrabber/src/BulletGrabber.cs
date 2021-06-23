@@ -44,16 +44,17 @@ namespace Osa.BulletGrabber
         // use an asset loader of some sort.
         private void LoadCfg()
         {
-            //"localhost", 16834
             var hand = Config.Bind("BulletGrabber", "HandMode", "", "Defines which hands can grab bullets. Valid options are: 'both', 'left' or 'right'.");
             var delay = Config.Bind("BulletGrabber", "Delay", 1000, "Defines delay (in milliseconds) between each bullet grab. To be safe, pick something higher than 200.");
-            var range = Config.Bind("BulletGrabber", "Range", 3.2f, "Defines range (in meters) of grab. Setting it higher than 3.2 will disable TnH scoring.");
-            
+            var range = Config.Bind("BulletGrabber", "Range", Hooks.MaxLegitRange, "Defines range (in meters) of grab. Setting it higher than 3.2 will disable TnH scoring.");
+            var bulet = Config.Bind("BulletGrabber", "BulletGrabMode", "closest", "Defines how compatible bullets finder should work. Valid options are: 'onlyTheSame', 'firstTheSame' or 'closest'.");
+
             Logger.LogInfo($"Loaded in: '{hand.Value}' hand(s) mode");
             Logger.LogInfo($"Loaded in: '{delay.Value}' ms of delay");
             Logger.LogInfo($"Loaded in: '{range.Value}' range");
+            Logger.LogInfo($"Loaded in: '{bulet.Value}' bullet detection mode");
             
-            _hooks = new Hooks(delay.Value,range.Value,hand.Value.ToLowerInvariant(), Logger);
+            _hooks = new Hooks(delay.Value,range.Value,hand.Value.ToLowerInvariant(), bulet.Value.ToLowerInvariant(), Logger);
         }
         
         // And now you can access much more of Deli
@@ -62,11 +63,6 @@ namespace Osa.BulletGrabber
 
         }
 
-        private void ConstructTextResource(SetupStage stage)
-        {
-            
-        }
-        
         private void OnDestroy()
         {
             _hooks?.Dispose();

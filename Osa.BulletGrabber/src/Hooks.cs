@@ -18,16 +18,19 @@ namespace Osa.BulletGrabber
         private readonly int _delay;
         private readonly float _range;
         private readonly string _hand;
+        private readonly string _buletGrab;
+        
         private readonly ManualLogSource _manualLogSource;
 
         //This is the range of the pickup laser + 0.2m, so should be fair.
-        private const float MaxLegitRange = 3.2f;
+        public const float MaxLegitRange = 3.2f;
 
-        public Hooks(int delay, float range, string hand, ManualLogSource manualLogSource)
+        public Hooks(int delay, float range, string hand, string buletGrab, ManualLogSource manualLogSource)
         {
             _delay = delay;
             _range = range;
             _hand = hand;
+            _buletGrab = buletGrab;
             _manualLogSource = manualLogSource;
             Hook();
         }
@@ -87,13 +90,15 @@ namespace Osa.BulletGrabber
             _manualLogSource.LogInfo($"Called");
             if (obj is FistVR.FVRFireArmRound round)
             {
+                string currentItemId = obj.ObjectWrapper.ItemID;
+                
                 _manualLogSource.LogInfo($"Is round!");
                 
                 if (!round.isPalmable || round.MaxPalmedAmount <= 1)
                     return;
                 
                 FistVR.FVRFireArmRound[] array = UnityEngine.Object.FindObjectsOfType<FistVR.FVRFireArmRound>();
-                
+
                 _manualLogSource.LogInfo($"Found {array.Length} rounds");
                 if (array.Length >= round.MaxPalmedAmount - 1)
                 {
@@ -101,7 +106,8 @@ namespace Osa.BulletGrabber
                 }
                 
                 // Filter out bullets
-                SortedList<float, FistVR.FVRFireArmRound> pickupAble = new SortedList<float, FistVR.FVRFireArmRound>();
+                SortedList<float, FistVR.FVRFireArmRound> pickupAbleSameType = new SortedList<float, FistVR.FVRFireArmRound>();
+                SortedList<float, FistVR.FVRFireArmRound> pickupAbleArmRounds = new SortedList<float, FistVR.FVRFireArmRound>();
                 foreach (FistVR.FVRFireArmRound bulet in array)
                 {
                     _manualLogSource.LogInfo($"Round type {bulet.RoundType} vs {round.RoundType}");
@@ -117,14 +123,59 @@ namespace Osa.BulletGrabber
                             _manualLogSource.LogInfo($"Too far!");
                             if (distance < _range){
                                 _manualLogSource.LogInfo($"Adding to the list");
-                                pickupAble.Add(distance, bulet);
+                                
+                                // Separated into the same bullets and the other types
+                                if (bulet.ObjectWrapper.ItemID == currentItemId && _buletGrab != "closest")
+                                {
+                                    pickupAbleSameType.Add(distance, bulet);
+                                }
+                                else
+                                {
+                                    pickupAbleArmRounds.Add(distance, bulet);
+                                }
+                                    
                             }
                         }
                     }
                 }
+                _manualLogSource.LogInfo($"Found: {pickupAbleSameType.Count} same rounds");
+                _manualLogSource.LogInfo($"Found: {pickupAbleArmRounds.Count} compatible");
 
-                _manualLogSource.LogInfo($"Adding to palm {pickupAble.Count} rounds");
-                AnvilManager.Run(GetBullets(pickupAble.Take(round.MaxPalmedAmount - 1).Select(x=>x.Value).ToList(), round));
+                List<FistVR.FVRFireArmRound>? selected;
+
+                // This defines how it should work for different settings, 
+                switch (_buletGrab)
+                {
+                    case "onlyTheSame": 
+                        
+                        selected = pickupAbleSameType.Take(round.MaxPalmedAmount - 1).Select(x => x.Value).ToList();
+                        
+                        break;
+                    case "firstTheSame": 
+                        
+                        selected = pickupAbleSameType.Take(round.MaxPalmedAmount - 1).Select(x => x.Value).ToList();
+                        
+                        //Not enough of the same type, add other, compatible bullets
+                        if (selected.Count < round.MaxPalmedAmount - 1)
+                        {
+                            selected.AddRange(pickupAbleArmRounds.Take(round.MaxPalmedAmount - 1 - selected.Count)
+                                .Select(x => x.Value).ToList());
+                        }
+                        
+                        AnvilManager.Run(GetBullets(selected, round));
+                        
+                        break;
+                    case "closest": 
+                        
+                        selected = pickupAbleArmRounds.Take(round.MaxPalmedAmount - 1).Select(x => x.Value).ToList();
+                        AnvilManager.Run(GetBullets(selected, round));
+                        
+                        break;
+                    default:
+                        throw new NotSupportedException($"BulletGrabMode of: {_buletGrab} is not supported!");
+                }
+                
+                AnvilManager.Run(GetBullets(selected, round));
             }
         }
 
