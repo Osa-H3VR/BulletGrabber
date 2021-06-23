@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using BepInEx.Logging;
 using Deli.Setup;
@@ -123,35 +124,37 @@ namespace Osa.BulletGrabber
                 }
 
                 _manualLogSource.LogInfo($"Adding to palm {pickupAble.Count} rounds");
-                _lastCall = DateTime.Now;
                 AnvilManager.Run(GetBullets(pickupAble.Take(round.MaxPalmedAmount - 1).Select(x=>x.Value).ToList(), round));
             }
         }
 
-        private DateTime _lastCall;
+        private Stopwatch _watch;
         private bool _active;
 
         private IEnumerator GetBullets(List<FistVR.FVRFireArmRound> list, FistVR.FVRFireArmRound round)
         {
+            _watch = new Stopwatch();
             _active = true;
+            _watch.Start();
 
             foreach (FistVR.FVRFireArmRound armRound in list)
             {
-                if (_lastCall + TimeSpan.FromMilliseconds(_delay) < DateTime.Now)
+                if (_watch.ElapsedMilliseconds < _delay)
                 {
                     // Wait more
                     yield return null;
                 }
                 else
                 {
-                    _lastCall = DateTime.Now;
-
                     round.HoveredOverRound = armRound;
+                    _watch.Reset();
+                    _watch.Start();
                     yield return null;
                 }
             }
 
             _active = false;
+            _watch.Reset();
         }
     }
 }
