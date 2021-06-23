@@ -19,6 +19,9 @@ namespace Osa.BulletGrabber
         private readonly string _hand;
         private readonly ManualLogSource _manualLogSource;
 
+        //This is the range of the pickup laser + 0.2m, so should be fair.
+        private const float MaxLegitRange = 3.2f;
+
         public Hooks(int delay, float range, string hand, ManualLogSource manualLogSource)
         {
             _delay = delay;
@@ -41,10 +44,18 @@ namespace Osa.BulletGrabber
         {
             On.FistVR.FVRViveHand.RetrieveObject += FVRViveHandOnRetrieveObject;
             On.FistVR.FVRFireArmRound.UpdateInteraction += FVRFireArmRoundOnUpdateInteraction;
+            On.FistVR.TNH_ScoreDisplay.SubmitScoreAndGoToBoard += TNH_ScoreDisplayOnSubmitScoreAndGoToBoard;
+        }
 
-            if (_range > 3.2)
+        private void TNH_ScoreDisplayOnSubmitScoreAndGoToBoard(TNH_ScoreDisplay.orig_SubmitScoreAndGoToBoard orig, FistVR.TNH_ScoreDisplay self, int score)
+        {
+            if (_range > MaxLegitRange)
             {
-                // TODO! Disable scoring when more than 3.2
+                _manualLogSource.LogWarning($"Configured range:{_range} is higher than maximum legit allowed: {MaxLegitRange}, TNH score will not be uploaded!");
+            }
+            else
+            {
+                orig(self, score);
             }
         }
 
