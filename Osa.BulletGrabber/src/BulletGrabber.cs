@@ -10,7 +10,7 @@ namespace Osa.BulletGrabber
     // DeliBehaviours are just MonoBehaviours that get added to a global game object when the game first starts.
     public class BulletGrabber : DeliBehaviour
     {
-        private Hooks _hooks;
+        private Hooks? _hooks;
         
         // All Deli properties can be accessed here, but don't use Unity's API until Awake.
         public BulletGrabber()
@@ -47,7 +47,7 @@ namespace Osa.BulletGrabber
             var hand = Config.Bind("BulletGrabber", "HandMode", "", "Defines which hands can grab bullets. Valid options are: 'both', 'left' or 'right'.");
             var delay = Config.Bind("BulletGrabber", "Delay", 1000, "Defines delay (in milliseconds) between each bullet grab. To be safe, pick something higher than 200.");
             var range = Config.Bind("BulletGrabber", "Range", Hooks.MaxLegitRange, "Defines range (in meters) of grab. Setting it higher than 3.2 will disable TnH scoring.");
-            var bulet = Config.Bind("BulletGrabber", "BulletGrabMode", "closest", "Defines how compatible bullets finder should work. Valid options are: 'onlyTheSame', 'firstTheSame' or 'closest'.");
+            var bulet = Config.Bind("BulletGrabber", "BulletGrabMode", "firstTheSame", "Defines how compatible bullets finder should work. Valid options are: 'onlyTheSame', 'firstTheSame' or 'closest'.");
 
             Logger.LogInfo($"Loaded in: '{hand.Value}' hand(s) mode");
             Logger.LogInfo($"Loaded in: '{delay.Value}' ms of delay");

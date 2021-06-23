@@ -179,7 +179,7 @@ namespace Osa.BulletGrabber
             }
         }
 
-        private Stopwatch _watch;
+        private Stopwatch? _watch;
         private bool _active;
 
         private IEnumerator GetBullets(List<FistVR.FVRFireArmRound> list, FistVR.FVRFireArmRound round)
