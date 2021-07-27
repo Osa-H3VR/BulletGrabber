@@ -11,7 +11,7 @@ using UnityEngine.SceneManagement;
 using FVRPhysicalObject = FistVR.FVRPhysicalObject;
 using FVRViveHand = FistVR.FVRViveHand;
 
-namespace Osa.BulletGrabber
+namespace Osa.BulletKinesis
 {
     public class Hooks
     {

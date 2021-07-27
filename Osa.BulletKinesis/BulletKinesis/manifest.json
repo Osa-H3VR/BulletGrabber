@@ -1,11 +1,11 @@
 {
-  "name": "BulletGrabber",
+  "name": "BulletKinesis",
   "authors": [
     "Osa__PL"
   ],
-  "guid": "osa.bulletgrabber",
-  "version": "0.1.1",
-  "require": "0.3.0",
+  "guid": "osa.bulletkinesis",
+  "version": "1.0.0",
+  "require": "0.4.0",
   "dependencies": {},
   "assets": {
     "patcher": {

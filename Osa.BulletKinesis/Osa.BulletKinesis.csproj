@@ -31,7 +31,7 @@
     <!-- This target copies dll to the folder, for quicker debbugging -->
     <Target Name="CopyDll" AfterTargets="AfterBuild" Condition="'$(ModDir)' != '' ">
         <Message Text="ModDir present, copying dll to $(ModDir)" />
-        <Copy SourceFiles="$(OutDir)Osa.BulletGrabber.dll" DestinationFolder="$(ModDir)" OverwriteReadOnlyFiles="true" />
+        <Copy SourceFiles="$(OutDir)Osa.BulletKinesis.dll" DestinationFolder="$(ModDir)" OverwriteReadOnlyFiles="true" />
     </Target>
 
 <!--    <Target Name="CreateDeli" AfterTargets="AfterBuild" Condition="'$(ResourcesPath)' != '' ">-->
