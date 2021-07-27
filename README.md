@@ -20,7 +20,7 @@ Requires: Deli 3.0
 2. Place the `.deli` file into your `Steam\steamapps\common\H3VR\Deli\mods` folder
 
 ## Configurating:
-Open: `Steam\steamapps\common\H3VR\Deli\configs\osa.bulletgrabber.cfg` with a notepad to configure. 
+Open: `Steam\steamapps\common\H3VR\Deli\configs\osa.bulletkinesis.cfg` with a notepad to configure. 
 
 ### HandMode
 You can choose if the hand should be able to use the grab.
