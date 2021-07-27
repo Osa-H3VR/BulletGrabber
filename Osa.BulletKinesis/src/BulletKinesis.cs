@@ -17,7 +17,7 @@ namespace Osa.BulletKinesis
         {
             // There is 1 log message in each of the methods here.
             // Run this mod to see the order of execution logged to console.
-            Logger.LogInfo("BulletGrabber loading...");
+            Logger.LogInfo("BulletKinesis loading...");
 
             // Hook to the setup stage (the first stage we can access)
             // Do not forget! Awake is still ran before ANY event.
@@ -44,10 +44,10 @@ namespace Osa.BulletKinesis
         // use an asset loader of some sort.
         private void LoadCfg()
         {
-            var hand = Config.Bind("BulletGrabber", "HandMode", "both", "Defines which hands can grab bullets. Valid options are: 'both', 'left' or 'right'.");
-            var delay = Config.Bind("BulletGrabber", "Delay", 150, "Defines delay (in milliseconds) between each bullet grab.");
-            var range = Config.Bind("BulletGrabber", "Range", Hooks.MaxLegitRange, $"Defines range (in meters) of grab. Setting it higher than {Hooks.MaxLegitRange} will disable TnH scoring.");
-            var bulet = Config.Bind("BulletGrabber", "BulletGrabMode", "firstTheSame", "Defines how compatible bullets finder should work. Valid options are: 'onlyTheSame', 'firstTheSame' or 'closest'.");
+            var hand = Config.Bind("BulletKinesis", "HandMode", "both", "Defines which hands can grab bullets. Valid options are: 'both', 'left' or 'right'.");
+            var delay = Config.Bind("BulletKinesis", "Delay", 150, "Defines delay (in milliseconds) between each bullet grab.");
+            var range = Config.Bind("BulletKinesis", "Range", Hooks.MaxLegitRange, $"Defines range (in meters) of grab. Setting it higher than {Hooks.MaxLegitRange} will disable TnH scoring.");
+            var bulet = Config.Bind("BulletKinesis", "BulletGrabMode", "firstTheSame", "Defines how compatible bullets finder should work. Valid options are: 'onlyTheSame', 'firstTheSame' or 'closest'.");
 
             Logger.LogInfo($"Loaded in: '{hand.Value}' hand(s) mode");
             Logger.LogInfo($"Loaded in: '{delay.Value}' ms of delay");
@@ -70,7 +70,7 @@ namespace Osa.BulletKinesis
 
         private void Start()
         {
-            Logger.LogInfo("BulletGrabber loaded.");
+            Logger.LogInfo("BulletKinesis loaded.");
         }
     }
 }

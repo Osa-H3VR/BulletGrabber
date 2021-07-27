@@ -12,7 +12,7 @@
       "hookgen.conf": "deli:monomod.hookgen"
     },
     "setup": {
-      "Osa.BulletGrabber.dll": "deli:assembly"
+      "Osa.BulletKinesis.dll": "deli:assembly"
     }
   }
 }
