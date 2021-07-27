@@ -15,9 +15,13 @@ Boy, I have the thing for you!
 Just point the grab lasor to the bulet and grab it, all nearby bullets will start entering your palm.
 
 ## Installation
-Requires: Deli 3.0
+Recommended: Use thunderstore to install: https://h3vr.thunderstore.io/package/OsaPL/BulletKinesis/
+
+Requires: Deli 4.1
+Manual:
 1. Download the release `.deli` file
-2. Place the `.deli` file into your `Steam\steamapps\common\H3VR\Deli\mods` folder
+2. Open `.deli` file as archive
+3. Extract it to `[profile]/BepInEx/plugins/BulletKinesis/`, create the folder if needed
 
 ## Configurating:
 Open: `Steam\steamapps\common\H3VR\Deli\configs\osa.bulletkinesis.cfg` with a notepad to configure. 
